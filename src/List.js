@@ -36,10 +36,31 @@ const targetedListItem = {
   padding: "1%",
 };
 
+const highPriority = {
+  backgroundColor: "red",
+  height: "80%",
+  width: "5%",
+  borderRadius: "15px",
+};
+
+const mediumPriority = {
+  backgroundColor: "yellow",
+  height: "80%",
+  width: "5%",
+  borderRadius: "15px",
+};
+
+const lowPriority = {
+  backgroundColor: "green",
+  height: "80%",
+  width: "5%",
+  borderRadius: "15px",
+};
+
 const List = () => {
   const [wholeList, setWholeList] = useState([
-    { id: 9, todo: "Clean House" },
-    { id: 8, todo: "Grocery Shop" },
+    { id: 9, todo: "Clean House", priority: "high" },
+    { id: 8, todo: "Grocery Shop", priority: "medium" },
   ]);
   const [displayAddTodoInput, setDisplayAddTodoInput] = useState(false);
   const [displayEditInput, setDisplayEditInput] = useState(false);
@@ -47,6 +68,8 @@ const List = () => {
   const [todoToEdit, setTodoToEdit] = useState("");
   const [todoToSearch, setTodoToSearch] = useState("");
   const [currentID, setCurrentID] = useState(-1);
+  const [selectedEditPriority, setSelectedEditPriority] = useState("high");
+  const [selectedAddPriority, setSelectedAddPriority] = useState("high");
   const filterSearchInput = wholeList.filter((todo) =>
     todo.todo.toLocaleLowerCase().includes(todoToSearch.toLocaleLowerCase())
   );
@@ -63,7 +86,10 @@ const List = () => {
   const addTodoToWholeList = () => {
     if (todoToAdd.trim() == "") return;
     const newID = Math.floor(Math.random() * 10000);
-    const updatedList = [...wholeList, { id: newID, todo: todoToAdd }];
+    const updatedList = [
+      ...wholeList,
+      { id: newID, todo: todoToAdd, priority: selectedAddPriority },
+    ];
     setWholeList(updatedList);
     setDisplayAddTodoInput(false);
   };
@@ -94,6 +120,7 @@ const List = () => {
     const updatedList = wholeList.map((todo) => {
       if (todo.id == currentID) {
         todo.todo = todoToEdit;
+        todo.priority = selectedEditPriority;
         return todo;
       } else {
         return todo;
@@ -106,6 +133,14 @@ const List = () => {
 
   const handleSearchChange = (e) => {
     setTodoToSearch(e.target.value);
+  };
+
+  const handleEditPriorityChange = (e) => {
+    setSelectedEditPriority(e.target.value);
+  };
+
+  const handleAddPriorityChange = (e) => {
+    setSelectedAddPriority(e.target.value);
   };
 
   return (
@@ -127,6 +162,15 @@ const List = () => {
             onChange={handleAddInput}
             value={todoToAdd}
           ></input>
+          <label> Select Priority: </label>
+          <select
+            value={selectedAddPriority}
+            onChange={handleAddPriorityChange}
+          >
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
           <button onClick={addTodoToWholeList}>Add</button>
         </div>
       )}
@@ -137,6 +181,15 @@ const List = () => {
             value={todoToEdit}
             onChange={handleEditChange}
           ></input>
+          <label> Select Priority: </label>
+          <select
+            value={selectedEditPriority}
+            onChange={handleEditPriorityChange}
+          >
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
           <button onClick={handleUpdateTodo}>Update</button>
           <button onClick={cancelEdit}>Cancel</button>
         </div>
@@ -148,6 +201,7 @@ const List = () => {
               {displayEditInput && todo.id === currentID ? (
                 <div style={targetedListItem} key={todo.id}>
                   <div>{todo.todo}</div>
+
                   <button onClick={() => handleDeleteTodo(todo.id)}>
                     Delete
                   </button>
@@ -156,6 +210,12 @@ const List = () => {
               ) : (
                 <div style={listItem} key={todo.id}>
                   <div>{todo.todo}</div>
+                  {todo.priority === "high" && <div style={highPriority}></div>}
+                  {todo.priority === "medium" && (
+                    <div style={mediumPriority}></div>
+                  )}
+                  {todo.priority === "low" && <div style={lowPriority} />}
+
                   <button onClick={() => handleDeleteTodo(todo.id)}>
                     Delete
                   </button>
