@@ -94,6 +94,11 @@ const List = () => {
     setDisplayAddTodoInput(false);
   };
 
+  const handleAddCancel = () => {
+    setDisplayAddTodoInput(false);
+    setTodoToAdd("");
+  };
+
   const handleDeleteTodo = (id) => {
     const updatedList = wholeList.filter((todo) => todo.id != id);
     setWholeList(updatedList);
@@ -172,6 +177,7 @@ const List = () => {
             <option value="low">Low</option>
           </select>
           <button onClick={addTodoToWholeList}>Add</button>
+          <button onClick={handleAddCancel}>Cancel</button>
         </div>
       )}
       {displayEditInput && (
