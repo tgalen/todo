@@ -103,6 +103,12 @@ const List = () => {
       (todo.completed === currentStatusFilter || currentStatusFilter === "all")
     );
   });
+  //   const storedList = JSON.stringify(wholeList);
+  //   localStorage.setItem("storedList", storedList);
+
+  window.onload = function () {
+    setWholeList(JSON.parse(localStorage.getItem("storedList")));
+  };
 
   const handleDisplayAddTodo = () => {
     setTodoToAdd("");
@@ -127,6 +133,8 @@ const List = () => {
     ];
     setWholeList(updatedList);
     setDisplayAddTodoInput(false);
+    const storedList = JSON.stringify(updatedList);
+    localStorage.setItem("storedList", storedList);
   };
 
   const handleAddCancel = () => {
@@ -137,6 +145,8 @@ const List = () => {
   const handleDeleteTodo = (id) => {
     const updatedList = wholeList.filter((todo) => todo.id !== id);
     setWholeList(updatedList);
+    const storedList = JSON.stringify(updatedList);
+    localStorage.setItem("storedList", storedList);
   };
 
   const handleEditClick = (id) => {
@@ -169,6 +179,8 @@ const List = () => {
     setWholeList(updatedList);
     setTodoToEdit("");
     setDisplayEditInput(false);
+    const storedList = JSON.stringify(updatedList);
+    localStorage.setItem("storedList", storedList);
   };
 
   const handleSearchChange = (e) => {
