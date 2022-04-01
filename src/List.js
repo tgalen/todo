@@ -78,10 +78,9 @@ retrieveAnimals.push({ animal: "fish" });
 localStorage.setItem("animals", JSON.stringify(retrieveAnimals));
 
 const List = () => {
-  const [wholeList, setWholeList] = useState([
-    { id: 9, todo: "Clean House", priority: "high", completed: false },
-    { id: 8, todo: "Grocery Shop", priority: "medium", completed: true },
-  ]);
+  const [wholeList, setWholeList] = useState(
+    JSON.parse(localStorage.getItem("storedList"))
+  );
   const [displayAddTodoInput, setDisplayAddTodoInput] = useState(false);
   const [displayEditInput, setDisplayEditInput] = useState(false);
   const [todoToAdd, setTodoToAdd] = useState("");
@@ -106,9 +105,11 @@ const List = () => {
   //   const storedList = JSON.stringify(wholeList);
   //   localStorage.setItem("storedList", storedList);
 
-  window.onload = function () {
-    setWholeList(JSON.parse(localStorage.getItem("storedList")));
-  };
+  //   window.onload = function () {
+  //     const parsedList = setWholeList(
+  //       JSON.parse(localStorage.getItem("storedList"))
+  //     );
+  //   };
 
   const handleDisplayAddTodo = () => {
     setTodoToAdd("");
