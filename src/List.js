@@ -9,7 +9,7 @@ const listWrapper = {
   margin: "auto",
   height: "100%",
   width: "55vw",
-  margin: "auto",
+
   borderRadius: "7px",
   padding: "1%",
 };
@@ -57,10 +57,30 @@ const lowPriority = {
   borderRadius: "15px",
 };
 
+const priorityStyles = {
+  high: highPriority,
+  medium: mediumPriority,
+  low: lowPriority,
+};
+
+const listItemWrapper = {};
+
+const editWrapper = {
+  display: "flex",
+  marginLeft: "50%",
+};
+
+const animals = [{ animal: "tiger" }, { animal: "lion" }, { animal: "bear" }];
+localStorage.setItem("animals", JSON.stringify(animals));
+const retrieveAnimals = JSON.parse(localStorage.getItem("animals"));
+console.log(retrieveAnimals);
+retrieveAnimals.push({ animal: "fish" });
+localStorage.setItem("animals", JSON.stringify(retrieveAnimals));
+
 const List = () => {
   const [wholeList, setWholeList] = useState([
-    { id: 9, todo: "Clean House", priority: "high" },
-    { id: 8, todo: "Grocery Shop", priority: "medium" },
+    { id: 9, todo: "Clean House", priority: "high", completed: false },
+    { id: 8, todo: "Grocery Shop", priority: "medium", completed: true },
   ]);
   const [displayAddTodoInput, setDisplayAddTodoInput] = useState(false);
   const [displayEditInput, setDisplayEditInput] = useState(false);
@@ -70,9 +90,17 @@ const List = () => {
   const [currentID, setCurrentID] = useState(-1);
   const [selectedEditPriority, setSelectedEditPriority] = useState("high");
   const [selectedAddPriority, setSelectedAddPriority] = useState("high");
-  const filterSearchInput = wholeList.filter((todo) =>
-    todo.todo.toLocaleLowerCase().includes(todoToSearch.toLocaleLowerCase())
-  );
+  const [currentPriorityFilter, setCurrentPriorityFilter] = useState("all");
+  // const [completedTodo, setCompletedTodo] = useState(false);
+  const filterSearchInput = wholeList.filter((todo) => {
+    return (
+      todo.todo
+        .toLocaleLowerCase()
+        .includes(todoToSearch.toLocaleLowerCase()) &&
+      (todo.priority === currentPriorityFilter ||
+        currentPriorityFilter === "all")
+    );
+  });
 
   const handleDisplayAddTodo = () => {
     setTodoToAdd("");
@@ -84,11 +112,16 @@ const List = () => {
   };
 
   const addTodoToWholeList = () => {
-    if (todoToAdd.trim() == "") return;
+    if (todoToAdd.trim() === "") return;
     const newID = Math.floor(Math.random() * 10000);
     const updatedList = [
       ...wholeList,
-      { id: newID, todo: todoToAdd, priority: selectedAddPriority },
+      {
+        id: newID,
+        todo: todoToAdd,
+        priority: selectedAddPriority,
+        completed: false,
+      },
     ];
     setWholeList(updatedList);
     setDisplayAddTodoInput(false);
@@ -100,12 +133,12 @@ const List = () => {
   };
 
   const handleDeleteTodo = (id) => {
-    const updatedList = wholeList.filter((todo) => todo.id != id);
+    const updatedList = wholeList.filter((todo) => todo.id !== id);
     setWholeList(updatedList);
   };
 
   const handleEditClick = (id) => {
-    const todoToUpdate = wholeList.filter((todo) => todo.id == id);
+    const todoToUpdate = wholeList.filter((todo) => todo.id === id);
     setTodoToEdit(todoToUpdate[0].todo);
     setDisplayEditInput(true);
     setCurrentID(id);
@@ -123,7 +156,7 @@ const List = () => {
   const handleUpdateTodo = () => {
     if (todoToEdit.trim() === "") return;
     const updatedList = wholeList.map((todo) => {
-      if (todo.id == currentID) {
+      if (todo.id === currentID) {
         todo.todo = todoToEdit;
         todo.priority = selectedEditPriority;
         return todo;
@@ -148,6 +181,22 @@ const List = () => {
     setSelectedAddPriority(e.target.value);
   };
 
+  const handlePriorityFilter = (e) => {
+    setCurrentPriorityFilter(e.target.value);
+  };
+
+  const handleCompletedCheck = (e, id) => {
+    const updatedList = wholeList.map((todo) => {
+      if (todo.id === id) {
+        todo.completed = !todo.completed;
+        e.target.checked = todo.completed;
+        return todo;
+      }
+      return todo;
+    });
+    setWholeList(updatedList);
+  };
+
   return (
     <div style={componentWrapper}>
       <div>
@@ -157,7 +206,15 @@ const List = () => {
           onChange={handleSearchChange}
         ></input>
         <button>Search</button>
+        <label>Filter By:</label>
+        <select value={currentPriorityFilter} onChange={handlePriorityFilter}>
+          <option value="all">All</option>
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
+        </select>
       </div>
+
       {!displayAddTodoInput ? (
         <button onClick={handleDisplayAddTodo}>+</button>
       ) : (
@@ -203,35 +260,73 @@ const List = () => {
       <div style={listWrapper}>
         {filterSearchInput.map((todo) => {
           return (
-            <div>
-              {displayEditInput && todo.id === currentID ? (
-                <div style={targetedListItem} key={todo.id}>
-                  <div>{todo.todo}</div>
-
-                  <button onClick={() => handleDeleteTodo(todo.id)}>
-                    Delete
-                  </button>
-                  <button onClick={() => handleEditClick(todo.id)}>Edit</button>
+            <div style={listItemWrapper} key={todo.id}>
+              <div
+                style={
+                  displayEditInput && todo.id === currentID
+                    ? targetedListItem
+                    : listItem
+                }
+              >
+                {/* {!(displayEditInput && todo.id === currentID) && (
+                  <div>
+                    <input type="checkbox" checked={true}></input>
+                  </div>
+                )} */}
+                <div
+                  style={
+                    todo.completed
+                      ? { textDecoration: "line-through" }
+                      : { textDecoration: "none" }
+                  }
+                >
+                  {todo.todo}
                 </div>
-              ) : (
-                <div style={listItem} key={todo.id}>
-                  <div>{todo.todo}</div>
-                  {todo.priority === "high" && <div style={highPriority}></div>}
-                  {todo.priority === "medium" && (
-                    <div style={mediumPriority}></div>
-                  )}
-                  {todo.priority === "low" && <div style={lowPriority} />}
 
-                  <button onClick={() => handleDeleteTodo(todo.id)}>
-                    Delete
-                  </button>
-                  <button onClick={() => handleEditClick(todo.id)}>Edit</button>
-                </div>
-              )}
+                {/* {todo.priority === "high" && <div style={highPriority}></div>}
+                {todo.priority === "medium" && (
+                  <div style={mediumPriority}></div>
+                )}
+                {todo.priority === "low" && <div style={lowPriority} />} */}
+
+                <div style={priorityStyles[todo.priority]} />
+
+                {!(displayEditInput && todo.id === currentID) && (
+                  <div style={editWrapper}>
+                    <button onClick={() => handleDeleteTodo(todo.id)}>
+                      Delete
+                    </button>
+                    <button onClick={() => handleEditClick(todo.id)}>
+                      Edit
+                    </button>
+                    <div>
+                      <input
+                        type="checkbox"
+                        checked={todo.completed}
+                        onChange={(e) => handleCompletedCheck(e, todo.id)}
+                      ></input>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           );
         })}
       </div>
+
+      {/* {1 === 2 ? (
+        <div>
+          <p style={{ color: "red" }}> Hello </p>
+          <button> btn </button>
+        </div>
+      ) : (
+        <p style={{ color: "blue" }}> Hello</p>
+      )}
+
+      <div>
+        <p style={1 === 2 ? { color: "red" } : { color: "blue" }}>Hello</p>
+        {1 === 2 && <button> btn </button>}
+      </div> */}
     </div>
   );
 };
