@@ -91,6 +91,7 @@ const List = () => {
   const [selectedEditPriority, setSelectedEditPriority] = useState("high");
   const [selectedAddPriority, setSelectedAddPriority] = useState("high");
   const [currentPriorityFilter, setCurrentPriorityFilter] = useState("all");
+  const [currentStatusFilter, setCurrentStatusFilter] = useState("all");
   // const [completedTodo, setCompletedTodo] = useState(false);
   const filterSearchInput = wholeList.filter((todo) => {
     return (
@@ -98,7 +99,8 @@ const List = () => {
         .toLocaleLowerCase()
         .includes(todoToSearch.toLocaleLowerCase()) &&
       (todo.priority === currentPriorityFilter ||
-        currentPriorityFilter === "all")
+        currentPriorityFilter === "all") &&
+      (todo.completed === currentStatusFilter || currentStatusFilter === "all")
     );
   });
 
@@ -197,6 +199,18 @@ const List = () => {
     setWholeList(updatedList);
   };
 
+  const handleStatusFilter = (e) => {
+    // boolean value returned as string
+    if (e.target.value === "true") {
+      setCurrentStatusFilter(true);
+    } else if (e.target.value === "all") {
+      setCurrentStatusFilter("all");
+    } else {
+      setCurrentStatusFilter(false);
+    }
+    console.log(currentStatusFilter);
+  };
+
   return (
     <div style={componentWrapper}>
       <div>
@@ -212,6 +226,12 @@ const List = () => {
           <option value="high">High</option>
           <option value="medium">Medium</option>
           <option value="low">Low</option>
+        </select>
+        <label>Status</label>
+        <select value={currentStatusFilter} onChange={handleStatusFilter}>
+          <option value="all">All</option>
+          <option value={true}>Completed</option>
+          <option value={false}>Incomplete</option>
         </select>
       </div>
 
