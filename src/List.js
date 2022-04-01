@@ -78,9 +78,10 @@ retrieveAnimals.push({ animal: "fish" });
 localStorage.setItem("animals", JSON.stringify(retrieveAnimals));
 
 const List = () => {
+  const storedList = JSON.parse(localStorage.getItem("storedList"));
   const [wholeList, setWholeList] = useState(
-    JSON.parse(localStorage.getItem("storedList"))
-  );
+    localStorage.getItem("storedList") ? localStorage.getItem("storedList") : []
+  ); /// need to handle no local storage
   const [displayAddTodoInput, setDisplayAddTodoInput] = useState(false);
   const [displayEditInput, setDisplayEditInput] = useState(false);
   const [todoToAdd, setTodoToAdd] = useState("");
