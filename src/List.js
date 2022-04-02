@@ -80,7 +80,9 @@ localStorage.setItem("animals", JSON.stringify(retrieveAnimals));
 const List = () => {
   const storedList = JSON.parse(localStorage.getItem("storedList"));
   const [wholeList, setWholeList] = useState(
-    localStorage.getItem("storedList") ? localStorage.getItem("storedList") : []
+    localStorage.getItem("storedList")
+      ? JSON.parse(localStorage.getItem("storedList"))
+      : []
   ); /// need to handle no local storage
   const [displayAddTodoInput, setDisplayAddTodoInput] = useState(false);
   const [displayEditInput, setDisplayEditInput] = useState(false);
@@ -111,6 +113,7 @@ const List = () => {
   //       JSON.parse(localStorage.getItem("storedList"))
   //     );
   //   };
+  console.log(storedList);
 
   const handleDisplayAddTodo = () => {
     setTodoToAdd("");
@@ -211,6 +214,7 @@ const List = () => {
       return todo;
     });
     setWholeList(updatedList);
+    localStorage.setItem("storedList", JSON.stringify(updatedList));
   };
 
   const handleStatusFilter = (e) => {
