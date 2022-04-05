@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { PRIORITY, STATUS } from "../constants";
 
 const componentWrapper = {
   textAlign: "center",
@@ -80,20 +81,24 @@ const TodoList = () => {
 
   // Filters
   const [todoSearchTerm, setTodoSearchTerm] = useState("");
-  const [currentPriorityFilter, setCurrentPriorityFilter] = useState("all");
-  const [currentStatusFilter, setCurrentStatusFilter] = useState("all");
+  const [currentPriorityFilter, setCurrentPriorityFilter] = useState(
+    PRIORITY.ALL
+  );
+  const [currentStatusFilter, setCurrentStatusFilter] = useState(PRIORITY.ALL);
 
   const [currentTodoID, setCurrentTodoID] = useState(-1);
 
   // Add todos states
   const [isAddTodoInputVisible, setAddTodoInputVisibility] = useState(false);
   const [addTodoTextInput, setAddTodoTextInput] = useState("");
-  const [selectedAddPriority, setSelectedAddPriority] = useState("high");
+  const [selectedAddPriority, setSelectedAddPriority] = useState(PRIORITY.HIGH);
 
   // Edit todos states
   const [isEditInputVisible, setEditInputVisibility] = useState(false);
   const [editTodoTextInput, setEditTodoTextInput] = useState("");
-  const [selectedEditPriority, setSelectedEditPriority] = useState("high");
+  const [selectedEditPriority, setSelectedEditPriority] = useState(
+    PRIORITY.HIGH
+  );
 
   const filteredTodoList = todoList.filter((todo) => {
     return (
@@ -101,11 +106,25 @@ const TodoList = () => {
         .toLocaleLowerCase()
         .includes(todoSearchTerm.toLocaleLowerCase()) &&
       (todo.priority === currentPriorityFilter ||
-        currentPriorityFilter === "all") &&
-      (todo.completed === currentStatusFilter || currentStatusFilter === "all")
+        currentPriorityFilter === PRIORITY.ALL) &&
+      (todo.status.toString() === currentStatusFilter ||
+        currentStatusFilter === STATUS.ALL)
     );
   });
 
+  // Search feature onChange functions
+  const handleStatusFilter = (e) => {
+    setCurrentStatusFilter(e.target.value);
+  };
+
+  const handleSearchChange = (e) => {
+    setTodoSearchTerm(e.target.value);
+  };
+  const handlePriorityFilter = (e) => {
+    setCurrentPriorityFilter(e.target.value);
+  };
+
+  // Add Todo feature functions
   const handleDisplayAddTodo = () => {
     setAddTodoTextInput("");
     setAddTodoInputVisibility(true);
@@ -124,7 +143,7 @@ const TodoList = () => {
         id: newID,
         todo: addTodoTextInput,
         priority: selectedAddPriority,
-        completed: false,
+        status: STATUS.INCOMPLETE,
       },
     ];
     setTodoList(updatedList);
@@ -138,13 +157,7 @@ const TodoList = () => {
     setAddTodoTextInput("");
   };
 
-  const handleDeleteTodo = (id) => {
-    const updatedList = todoList.filter((todo) => todo.id !== id);
-    setTodoList(updatedList);
-    const storedList = JSON.stringify(updatedList);
-    localStorage.setItem("storedList", storedList);
-  };
-
+  // Edit feature functions
   const handleEditClick = (id) => {
     const todoToUpdate = todoList.filter((todo) => todo.id === id);
     setEditTodoTextInput(todoToUpdate[0].todo);
@@ -179,10 +192,6 @@ const TodoList = () => {
     localStorage.setItem("storedList", storedList);
   };
 
-  const handleSearchChange = (e) => {
-    setTodoSearchTerm(e.target.value);
-  };
-
   const handleEditPriorityChange = (e) => {
     setSelectedEditPriority(e.target.value);
   };
@@ -191,15 +200,16 @@ const TodoList = () => {
     setSelectedAddPriority(e.target.value);
   };
 
-  const handlePriorityFilter = (e) => {
-    setCurrentPriorityFilter(e.target.value);
-  };
-
+  // Toggle Todo completed status
   const handleCompletedCheck = (e, id) => {
     const updatedList = todoList.map((todo) => {
       if (todo.id === id) {
-        todo.completed = !todo.completed;
-        e.target.checked = todo.completed;
+        if (todo.status === STATUS.COMPLETE) {
+          todo.status = STATUS.INCOMPLETE;
+        } else {
+          todo.status = STATUS.COMPLETE;
+        }
+        e.target.checked = todo.status;
         return todo;
       }
       return todo;
@@ -207,17 +217,12 @@ const TodoList = () => {
     setTodoList(updatedList);
     localStorage.setItem("storedList", JSON.stringify(updatedList));
   };
-
-  const handleStatusFilter = (e) => {
-    // boolean value returned as string
-    if (e.target.value === "true") {
-      setCurrentStatusFilter(true);
-    } else if (e.target.value === "all") {
-      setCurrentStatusFilter("all");
-    } else {
-      setCurrentStatusFilter(false);
-    }
-    console.log(currentStatusFilter);
+  // Delete Todo
+  const handleDeleteTodo = (id) => {
+    const updatedList = todoList.filter((todo) => todo.id !== id);
+    setTodoList(updatedList);
+    const storedList = JSON.stringify(updatedList);
+    localStorage.setItem("storedList", storedList);
   };
 
   return (
@@ -232,16 +237,16 @@ const TodoList = () => {
         <button>Search</button>
         <label>Filter By:</label>
         <select value={currentPriorityFilter} onChange={handlePriorityFilter}>
-          <option value="all">All</option>
-          <option value="high">High</option>
-          <option value="medium">Medium</option>
-          <option value="low">Low</option>
+          <option value={PRIORITY.ALL}>All</option>
+          <option value={PRIORITY.HIGH}>High</option>
+          <option value={PRIORITY.MEDIUM}>Medium</option>
+          <option value={PRIORITY.LOW}>Low</option>
         </select>
         <label>Status</label>
         <select value={currentStatusFilter} onChange={handleStatusFilter}>
-          <option value="all">All</option>
-          <option value={true}>Completed</option>
-          <option value={false}>Incomplete</option>
+          <option value={STATUS.ALL}>All</option>
+          <option value={STATUS.COMPLETE}>Completed</option>
+          <option value={STATUS.INCOMPLETE}>Incomplete</option>
         </select>
       </div>
 
@@ -260,9 +265,9 @@ const TodoList = () => {
             value={selectedAddPriority}
             onChange={handleAddPriorityChange}
           >
-            <option value="high">High</option>
-            <option value="medium">Medium</option>
-            <option value="low">Low</option>
+            <option value={PRIORITY.HIGH}>High</option>
+            <option value={PRIORITY.MEDIUM}>Medium</option>
+            <option value={PRIORITY.LOW}>Low</option>
           </select>
           <button onClick={addTodoToWholeList}>Add</button>
           <button onClick={handleAddCancel}>Cancel</button>
@@ -282,9 +287,9 @@ const TodoList = () => {
             value={selectedEditPriority}
             onChange={handleEditPriorityChange}
           >
-            <option value="high">High</option>
-            <option value="medium">Medium</option>
-            <option value="low">Low</option>
+            <option value={PRIORITY.HIGH}>High</option>
+            <option value={PRIORITY.MEDIUM}>Medium</option>
+            <option value={PRIORITY.LOW}>Low</option>
           </select>
           <button onClick={handleUpdateTodo}>Update</button>
           <button onClick={cancelEdit}>Cancel</button>
@@ -305,7 +310,7 @@ const TodoList = () => {
               >
                 <div
                   style={
-                    todo.completed
+                    todo.status === STATUS.COMPLETE
                       ? { textDecoration: "line-through" }
                       : { textDecoration: "none" }
                   }
@@ -324,7 +329,7 @@ const TodoList = () => {
                     <div>
                       <input
                         type="checkbox"
-                        checked={todo.completed}
+                        checked={todo.status}
                         onChange={(e) => handleCompletedCheck(e, todo.id)}
                       ></input>
                     </div>
