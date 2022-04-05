@@ -70,126 +70,117 @@ const editWrapper = {
   marginLeft: "50%",
 };
 
-const animals = [{ animal: "tiger" }, { animal: "lion" }, { animal: "bear" }];
-localStorage.setItem("animals", JSON.stringify(animals));
-const retrieveAnimals = JSON.parse(localStorage.getItem("animals"));
-console.log(retrieveAnimals);
-retrieveAnimals.push({ animal: "fish" });
-localStorage.setItem("animals", JSON.stringify(retrieveAnimals));
-
-const List = () => {
-  const storedList = JSON.parse(localStorage.getItem("storedList"));
-  const [wholeList, setWholeList] = useState(
+const TodoList = () => {
+  // Todos
+  const [todoList, setTodoList] = useState(
     localStorage.getItem("storedList")
       ? JSON.parse(localStorage.getItem("storedList"))
       : []
-  ); /// need to handle no local storage
-  const [displayAddTodoInput, setDisplayAddTodoInput] = useState(false);
-  const [displayEditInput, setDisplayEditInput] = useState(false);
-  const [todoToAdd, setTodoToAdd] = useState("");
-  const [todoToEdit, setTodoToEdit] = useState("");
-  const [todoToSearch, setTodoToSearch] = useState("");
-  const [currentID, setCurrentID] = useState(-1);
-  const [selectedEditPriority, setSelectedEditPriority] = useState("high");
-  const [selectedAddPriority, setSelectedAddPriority] = useState("high");
+  );
+
+  // Filters
+  const [todoSearchTerm, setTodoSearchTerm] = useState("");
   const [currentPriorityFilter, setCurrentPriorityFilter] = useState("all");
   const [currentStatusFilter, setCurrentStatusFilter] = useState("all");
-  // const [completedTodo, setCompletedTodo] = useState(false);
-  const filterSearchInput = wholeList.filter((todo) => {
+
+  const [currentTodoID, setCurrentTodoID] = useState(-1);
+
+  // Add todos states
+  const [isAddTodoInputVisible, setAddTodoInputVisibility] = useState(false);
+  const [addTodoTextInput, setAddTodoTextInput] = useState("");
+  const [selectedAddPriority, setSelectedAddPriority] = useState("high");
+
+  // Edit todos states
+  const [isEditInputVisible, setEditInputVisibility] = useState(false);
+  const [editTodoTextInput, setEditTodoTextInput] = useState("");
+  const [selectedEditPriority, setSelectedEditPriority] = useState("high");
+
+  const filteredTodoList = todoList.filter((todo) => {
     return (
       todo.todo
         .toLocaleLowerCase()
-        .includes(todoToSearch.toLocaleLowerCase()) &&
+        .includes(todoSearchTerm.toLocaleLowerCase()) &&
       (todo.priority === currentPriorityFilter ||
         currentPriorityFilter === "all") &&
       (todo.completed === currentStatusFilter || currentStatusFilter === "all")
     );
   });
-  //   const storedList = JSON.stringify(wholeList);
-  //   localStorage.setItem("storedList", storedList);
-
-  //   window.onload = function () {
-  //     const parsedList = setWholeList(
-  //       JSON.parse(localStorage.getItem("storedList"))
-  //     );
-  //   };
-  console.log(storedList);
 
   const handleDisplayAddTodo = () => {
-    setTodoToAdd("");
-    setDisplayAddTodoInput(true);
+    setAddTodoTextInput("");
+    setAddTodoInputVisibility(true);
   };
 
   const handleAddInput = (e) => {
-    setTodoToAdd(e.target.value);
+    setAddTodoTextInput(e.target.value);
   };
 
   const addTodoToWholeList = () => {
-    if (todoToAdd.trim() === "") return;
+    if (addTodoTextInput.trim() === "") return;
     const newID = Math.floor(Math.random() * 10000);
     const updatedList = [
-      ...wholeList,
+      ...todoList,
       {
         id: newID,
-        todo: todoToAdd,
+        todo: addTodoTextInput,
         priority: selectedAddPriority,
         completed: false,
       },
     ];
-    setWholeList(updatedList);
-    setDisplayAddTodoInput(false);
+    setTodoList(updatedList);
+    setAddTodoInputVisibility(false);
     const storedList = JSON.stringify(updatedList);
     localStorage.setItem("storedList", storedList);
   };
 
   const handleAddCancel = () => {
-    setDisplayAddTodoInput(false);
-    setTodoToAdd("");
+    setAddTodoInputVisibility(false);
+    setAddTodoTextInput("");
   };
 
   const handleDeleteTodo = (id) => {
-    const updatedList = wholeList.filter((todo) => todo.id !== id);
-    setWholeList(updatedList);
+    const updatedList = todoList.filter((todo) => todo.id !== id);
+    setTodoList(updatedList);
     const storedList = JSON.stringify(updatedList);
     localStorage.setItem("storedList", storedList);
   };
 
   const handleEditClick = (id) => {
-    const todoToUpdate = wholeList.filter((todo) => todo.id === id);
-    setTodoToEdit(todoToUpdate[0].todo);
-    setDisplayEditInput(true);
-    setCurrentID(id);
+    const todoToUpdate = todoList.filter((todo) => todo.id === id);
+    setEditTodoTextInput(todoToUpdate[0].todo);
+    setEditInputVisibility(true);
+    setCurrentTodoID(id);
   };
 
   const handleEditChange = (e) => {
-    setTodoToEdit(e.target.value);
+    setEditTodoTextInput(e.target.value);
   };
 
   const cancelEdit = () => {
-    setTodoToEdit("");
-    setDisplayEditInput(false);
+    setEditTodoTextInput("");
+    setEditInputVisibility(false);
   };
 
   const handleUpdateTodo = () => {
-    if (todoToEdit.trim() === "") return;
-    const updatedList = wholeList.map((todo) => {
-      if (todo.id === currentID) {
-        todo.todo = todoToEdit;
+    if (editTodoTextInput.trim() === "") return;
+    const updatedList = todoList.map((todo) => {
+      if (todo.id === currentTodoID) {
+        todo.todo = editTodoTextInput;
         todo.priority = selectedEditPriority;
         return todo;
       } else {
         return todo;
       }
     });
-    setWholeList(updatedList);
-    setTodoToEdit("");
-    setDisplayEditInput(false);
+    setTodoList(updatedList);
+    setEditTodoTextInput("");
+    setEditInputVisibility(false);
     const storedList = JSON.stringify(updatedList);
     localStorage.setItem("storedList", storedList);
   };
 
   const handleSearchChange = (e) => {
-    setTodoToSearch(e.target.value);
+    setTodoSearchTerm(e.target.value);
   };
 
   const handleEditPriorityChange = (e) => {
@@ -205,7 +196,7 @@ const List = () => {
   };
 
   const handleCompletedCheck = (e, id) => {
-    const updatedList = wholeList.map((todo) => {
+    const updatedList = todoList.map((todo) => {
       if (todo.id === id) {
         todo.completed = !todo.completed;
         e.target.checked = todo.completed;
@@ -213,7 +204,7 @@ const List = () => {
       }
       return todo;
     });
-    setWholeList(updatedList);
+    setTodoList(updatedList);
     localStorage.setItem("storedList", JSON.stringify(updatedList));
   };
 
@@ -231,10 +222,11 @@ const List = () => {
 
   return (
     <div style={componentWrapper}>
+      {/* Search Bar, Priority and Status Filters */}
       <div>
         <input
           type="search"
-          value={todoToSearch}
+          value={todoSearchTerm}
           onChange={handleSearchChange}
         ></input>
         <button>Search</button>
@@ -253,14 +245,15 @@ const List = () => {
         </select>
       </div>
 
-      {!displayAddTodoInput ? (
+      {/* Add Todo */}
+      {!isAddTodoInputVisible ? (
         <button onClick={handleDisplayAddTodo}>+</button>
       ) : (
         <div>
           <input
             type="text"
             onChange={handleAddInput}
-            value={todoToAdd}
+            value={addTodoTextInput}
           ></input>
           <label> Select Priority: </label>
           <select
@@ -275,11 +268,13 @@ const List = () => {
           <button onClick={handleAddCancel}>Cancel</button>
         </div>
       )}
-      {displayEditInput && (
+
+      {/* Edit Todo */}
+      {isEditInputVisible && (
         <div>
           <input
             type="text"
-            value={todoToEdit}
+            value={editTodoTextInput}
             onChange={handleEditChange}
           ></input>
           <label> Select Priority: </label>
@@ -295,22 +290,19 @@ const List = () => {
           <button onClick={cancelEdit}>Cancel</button>
         </div>
       )}
+
+      {/* Todo List Display */}
       <div style={listWrapper}>
-        {filterSearchInput.map((todo) => {
+        {filteredTodoList.map((todo) => {
           return (
             <div style={listItemWrapper} key={todo.id}>
               <div
                 style={
-                  displayEditInput && todo.id === currentID
+                  isEditInputVisible && todo.id === currentTodoID
                     ? targetedListItem
                     : listItem
                 }
               >
-                {/* {!(displayEditInput && todo.id === currentID) && (
-                  <div>
-                    <input type="checkbox" checked={true}></input>
-                  </div>
-                )} */}
                 <div
                   style={
                     todo.completed
@@ -320,16 +312,8 @@ const List = () => {
                 >
                   {todo.todo}
                 </div>
-
-                {/* {todo.priority === "high" && <div style={highPriority}></div>}
-                {todo.priority === "medium" && (
-                  <div style={mediumPriority}></div>
-                )}
-                {todo.priority === "low" && <div style={lowPriority} />} */}
-
                 <div style={priorityStyles[todo.priority]} />
-
-                {!(displayEditInput && todo.id === currentID) && (
+                {!(isEditInputVisible && todo.id === currentTodoID) && (
                   <div style={editWrapper}>
                     <button onClick={() => handleDeleteTodo(todo.id)}>
                       Delete
@@ -351,22 +335,8 @@ const List = () => {
           );
         })}
       </div>
-
-      {/* {1 === 2 ? (
-        <div>
-          <p style={{ color: "red" }}> Hello </p>
-          <button> btn </button>
-        </div>
-      ) : (
-        <p style={{ color: "blue" }}> Hello</p>
-      )}
-
-      <div>
-        <p style={1 === 2 ? { color: "red" } : { color: "blue" }}>Hello</p>
-        {1 === 2 && <button> btn </button>}
-      </div> */}
     </div>
   );
 };
 
-export default List;
+export default TodoList;
