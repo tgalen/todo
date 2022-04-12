@@ -1,5 +1,9 @@
 import { useState } from "react";
 import { PRIORITY, STATUS } from "../constants";
+import SearchBar from "./SearchBar";
+import Filter from "./Filter";
+import AddTodoForm from "./AddTodoForm";
+import EditTodoForm from "./EditTodoForm";
 
 const componentWrapper = {
   textAlign: "center",
@@ -10,7 +14,6 @@ const listWrapper = {
   margin: "auto",
   height: "100%",
   width: "55vw",
-
   borderRadius: "7px",
   padding: "1%",
 };
@@ -64,8 +67,6 @@ const priorityStyles = {
   low: lowPriority,
 };
 
-const listItemWrapper = {};
-
 const editWrapper = {
   display: "flex",
   marginLeft: "50%",
@@ -79,6 +80,9 @@ const TodoList = () => {
       : []
   );
 
+  const [isEditInputVisible, setEditInputVisibility] = useState(false);
+  const [editTodoTextInput, setEditTodoTextInput] = useState("");
+
   // Filters
   const [todoSearchTerm, setTodoSearchTerm] = useState("");
   const [currentPriorityFilter, setCurrentPriorityFilter] = useState(
@@ -87,18 +91,6 @@ const TodoList = () => {
   const [currentStatusFilter, setCurrentStatusFilter] = useState(PRIORITY.ALL);
 
   const [currentTodoID, setCurrentTodoID] = useState(-1);
-
-  // Add todos states
-  const [isAddTodoInputVisible, setAddTodoInputVisibility] = useState(false);
-  const [addTodoTextInput, setAddTodoTextInput] = useState("");
-  const [selectedAddPriority, setSelectedAddPriority] = useState(PRIORITY.HIGH);
-
-  // Edit todos states
-  const [isEditInputVisible, setEditInputVisibility] = useState(false);
-  const [editTodoTextInput, setEditTodoTextInput] = useState("");
-  const [selectedEditPriority, setSelectedEditPriority] = useState(
-    PRIORITY.HIGH
-  );
 
   const filteredTodoList = todoList.filter((todo) => {
     return (
@@ -122,82 +114,6 @@ const TodoList = () => {
   };
   const handlePriorityFilter = (e) => {
     setCurrentPriorityFilter(e.target.value);
-  };
-
-  // Add Todo feature functions
-  const handleDisplayAddTodo = () => {
-    setAddTodoTextInput("");
-    setAddTodoInputVisibility(true);
-  };
-
-  const handleAddInput = (e) => {
-    setAddTodoTextInput(e.target.value);
-  };
-
-  const addTodoToWholeList = () => {
-    if (addTodoTextInput.trim() === "") return;
-    const newID = Math.floor(Math.random() * 10000);
-    const updatedList = [
-      ...todoList,
-      {
-        id: newID,
-        todo: addTodoTextInput,
-        priority: selectedAddPriority,
-        status: STATUS.INCOMPLETE,
-      },
-    ];
-    setTodoList(updatedList);
-    setAddTodoInputVisibility(false);
-    const storedList = JSON.stringify(updatedList);
-    localStorage.setItem("storedList", storedList);
-  };
-
-  const handleAddCancel = () => {
-    setAddTodoInputVisibility(false);
-    setAddTodoTextInput("");
-  };
-
-  // Edit feature functions
-  const handleEditClick = (id) => {
-    const todoToUpdate = todoList.filter((todo) => todo.id === id);
-    setEditTodoTextInput(todoToUpdate[0].todo);
-    setEditInputVisibility(true);
-    setCurrentTodoID(id);
-  };
-
-  const handleEditChange = (e) => {
-    setEditTodoTextInput(e.target.value);
-  };
-
-  const cancelEdit = () => {
-    setEditTodoTextInput("");
-    setEditInputVisibility(false);
-  };
-
-  const handleUpdateTodo = () => {
-    if (editTodoTextInput.trim() === "") return;
-    const updatedList = todoList.map((todo) => {
-      if (todo.id === currentTodoID) {
-        todo.todo = editTodoTextInput;
-        todo.priority = selectedEditPriority;
-        return todo;
-      } else {
-        return todo;
-      }
-    });
-    setTodoList(updatedList);
-    setEditTodoTextInput("");
-    setEditInputVisibility(false);
-    const storedList = JSON.stringify(updatedList);
-    localStorage.setItem("storedList", storedList);
-  };
-
-  const handleEditPriorityChange = (e) => {
-    setSelectedEditPriority(e.target.value);
-  };
-
-  const handleAddPriorityChange = (e) => {
-    setSelectedAddPriority(e.target.value);
   };
 
   // Toggle Todo completed status
@@ -225,82 +141,48 @@ const TodoList = () => {
     localStorage.setItem("storedList", storedList);
   };
 
+  // Edit function
+  const handleEditClick = (id) => {
+    const todoToUpdate = todoList.filter((todo) => todo.id === id);
+    setEditTodoTextInput(todoToUpdate[0].todo);
+    setEditInputVisibility(true);
+    setCurrentTodoID(id);
+  };
+
   return (
     <div style={componentWrapper}>
       {/* Search Bar, Priority and Status Filters */}
       <div>
-        <input
-          type="search"
-          value={todoSearchTerm}
-          onChange={handleSearchChange}
-        ></input>
-        <button>Search</button>
-        <label>Filter By:</label>
-        <select value={currentPriorityFilter} onChange={handlePriorityFilter}>
-          <option value={PRIORITY.ALL}>All</option>
-          <option value={PRIORITY.HIGH}>High</option>
-          <option value={PRIORITY.MEDIUM}>Medium</option>
-          <option value={PRIORITY.LOW}>Low</option>
-        </select>
-        <label>Status</label>
-        <select value={currentStatusFilter} onChange={handleStatusFilter}>
-          <option value={STATUS.ALL}>All</option>
-          <option value={STATUS.COMPLETE}>Completed</option>
-          <option value={STATUS.INCOMPLETE}>Incomplete</option>
-        </select>
+        <SearchBar
+          todoSearchTerm={todoSearchTerm}
+          handleSearchChange={handleSearchChange}
+        />
+        <Filter
+          currentPriorityFilter={currentPriorityFilter}
+          handlePriorityFilter={handlePriorityFilter}
+          currentStatusFilter={currentStatusFilter}
+          handleStatusFilter={handleStatusFilter}
+        />
       </div>
-
       {/* Add Todo */}
-      {!isAddTodoInputVisible ? (
-        <button onClick={handleDisplayAddTodo}>+</button>
-      ) : (
-        <div>
-          <input
-            type="text"
-            onChange={handleAddInput}
-            value={addTodoTextInput}
-          ></input>
-          <label> Select Priority: </label>
-          <select
-            value={selectedAddPriority}
-            onChange={handleAddPriorityChange}
-          >
-            <option value={PRIORITY.HIGH}>High</option>
-            <option value={PRIORITY.MEDIUM}>Medium</option>
-            <option value={PRIORITY.LOW}>Low</option>
-          </select>
-          <button onClick={addTodoToWholeList}>Add</button>
-          <button onClick={handleAddCancel}>Cancel</button>
-        </div>
-      )}
+      <AddTodoForm todoList={todoList} setTodoList={setTodoList} />
 
       {/* Edit Todo */}
-      {isEditInputVisible && (
-        <div>
-          <input
-            type="text"
-            value={editTodoTextInput}
-            onChange={handleEditChange}
-          ></input>
-          <label> Select Priority: </label>
-          <select
-            value={selectedEditPriority}
-            onChange={handleEditPriorityChange}
-          >
-            <option value={PRIORITY.HIGH}>High</option>
-            <option value={PRIORITY.MEDIUM}>Medium</option>
-            <option value={PRIORITY.LOW}>Low</option>
-          </select>
-          <button onClick={handleUpdateTodo}>Update</button>
-          <button onClick={cancelEdit}>Cancel</button>
-        </div>
-      )}
+      <EditTodoForm
+        setEditTodoTextInput={setEditTodoTextInput}
+        setEditInputVisibility={setEditInputVisibility}
+        editTodoTextInput={editTodoTextInput}
+        todoList={todoList}
+        setTodoList={setTodoList}
+        currentTodoID={currentTodoID}
+        isEditInputVisible={isEditInputVisible}
+      />
 
       {/* Todo List Display */}
       <div style={listWrapper}>
         {filteredTodoList.map((todo) => {
           return (
-            <div style={listItemWrapper} key={todo.id}>
+            <div key={todo.id}>
               <div
                 style={
                   isEditInputVisible && todo.id === currentTodoID
